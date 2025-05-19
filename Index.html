@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Owalker Games</title>
+  <style>
+    /* Basic Styles */
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: black;
+      font-family: 'Arial', sans-serif;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    h1 {
+      font-size: 60px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .container {
+      z-index: 10;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .game-links {
+      margin-top: 30px;
+    }
+
+    .game-links a {
+      color: #00ff00;
+      font-size: 20px;
+      margin: 10px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .game-links a:hover {
+      color: #ff9900;
+    }
+
+    /* Stars Background Animation */
+    @keyframes moveStars {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(100%); }
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('https://www.transparenttextures.com/patterns/stars.png');
+      opacity: 0.1;
+      animation: moveStars 30s linear infinite;
+    }
+
+    /* Game Modal Styles */
+    .game-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: black;
+      border: 2px solid #fff;
+      padding: 20px;
+      width: 80%;
+      max-width: 800px;
+      z-index: 999;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .game-canvas {
+      background-color: #000;
+    }
+
+    .modal-header {
+      font-size: 24px;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Owalker Games</h1>
+    <div class="game-links">
+      <a href="#" onclick="openGame('ticTacToe')">Tic-Tac-Toe</a>
+      <a href="#" onclick="openGame('snake')">Snake Game</a>
+      <a href="#" onclick="openGame('spaceInvaders')">Space Invaders</a>
+      <a href="#" onclick="openGame('subwaySurfers')">Subway Surfers (Clone)</a>
+      <a href="#" onclick="openGame('roblox')">Roblox (Link)</a>
+    </div>
+  </div>
+
+  <!-- Modal for Games -->
+  <div id="gameModal" class="game-modal">
+    <span class="close-modal" onclick="closeGame()">X</span>
+    <div class="modal-header" id="gameTitle"></div>
+    <canvas id="gameCanvas" class="game-canvas"></canvas>
+  </div>
+
+  <script>
+    // Function to open game in modal
+    function openGame(gameName) {
+      const modal = document.getElementById('gameModal');
+      const canvas = document.getElementById('gameCanvas');
+      const gameTitle = document.getElementById('gameTitle');
+      modal.style.display = 'block';
+
+      if (gameName === 'ticTacToe') {
+        gameTitle.textContent = 'Tic-Tac-Toe';
+        initTicTacToe(canvas);
+      } else if (gameName === 'snake') {
+        gameTitle.textContent = 'Snake Game';
+        initSnakeGame(canvas);
+      } else if (gameName === 'spaceInvaders') {
+        gameTitle.textContent = 'Space Invaders';
+        initSpaceInvaders(canvas);
+      } else if (gameName === 'subwaySurfers') {
+        gameTitle.textContent = 'Subway Surfers (Clone)';
+        initSubwaySurfers(canvas);
+      } else if (gameName === 'roblox') {
+        gameTitle.textContent = 'Roblox (Link)';
+        window.open('https://www.roblox.com', '_blank');
+        closeGame(); // Close modal after opening the Roblox link
+      }
+    }
+
+    // Function to close modal
+    function closeGame() {
+      const modal = document.getElementById('gameModal');
+      modal.style.display = 'none';
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // --- Game Implementations Below ---
+
+    // Tic-Tac-Toe Game
+    function initTicTacToe(canvas) {
+      const ctx = canvas.getContext('2d');
+      canvas.width = 300;
+      canvas.height = 300;
+      const board = [
+        ['', '', ''],
+        ['', '', ''],
+        ['', '', '']
+      ];
+      let currentPlayer = 'X';
+      let gameOver = false;
+
+      canvas.addEventListener('click', (e) => {
+        if (gameOver) return;
+        const x = Math.floor(e.offsetX / 100);
+        const y = Math.floor(e.offsetY / 100);
+        if (board[y][x] === '') {
+          board[y][x] = currentPlayer;
+          currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+          drawBoard(ctx, board);
+          checkWinner(board);
+        }
+      });
+
+      function drawBoard(ctx, board) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+
+        for (let i = 1; i < 3; i++) {
+          ctx.beginPath();
+          ctx.moveTo(100 * i, 0);
+          ctx.lineTo(100 * i, 300);
+          ctx.moveTo(0, 100 * i);
+          ctx.lineTo(300, 100 * i);
+          ctx.stroke();
+        }
+
+        for (let y = 0; y < 3; y++) {
+          for (let x = 0; x < 3; x++) {
+            if (board[y][x]) {
+              ctx.fillStyle = '#fff';
+              ctx.font = '50px Arial';
+              ctx.fillText(board[y][x], x * 100 + 35, y * 100 + 65);
+            }
+          }
+        }
+      }
+
+      function checkWinner(board) {
+        for (let i = 0; i < 3; i++) {
+          if (board[i][0] && board[i][0] === board[i][1] && board[i][1] === board[i][2]) {
+            gameOver = true;
+            alert(board[i][0] + ' wins!');
+            return;
+          }
+          if (board[0][i] && board[0][i] === board[1][i] && board[1][i] === board[2][i]) {
+            gameOver = true;
+            alert(board[0][i] + ' wins!');
+            return;
+          }
+        }
+
+        if (board[0][0] && board[0][0] === board[1][1] && board[1][1] === board[2][2]) {
+          gameOver = true;
+          alert(board[0][0] + ' wins!');
+        } else if (board[0][2] && board[0][2] === board[1][1] && board[1][1] === board[2][0]) {
+          gameOver = true;
+          alert(board[0][2] + ' wins!');
+        }
+      }
+
+      drawBoard(ctx, board);
+    }
+
+    // Snake Game
+    function initSnakeGame(canvas) {
+      const ctx = canvas.getContext('2d');
+      canvas.width = 300;
+      canvas.height = 300;
+
+      const snake = [{ x: 50, y: 50 }];
+      const food = { x: 150, y: 150 };
+      let direction = 'RIGHT';
+      let gameOver = false;
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'green';
+        for (const part of snake) {
+          ctx.fillRect(part.x, part.y, 10, 10);
+        }
+
+        ctx.fillStyle = 'red';
+        ctx.fillRect(food.x, food.y, 10, 10);
+      }
+
+      function move() {
+        const head = { ...snake[0] };
+
+        if (direction === 'UP') head.y -= 10;
+        if (direction === 'DOWN') head.y += 10;
+        if (direction === 'LEFT') head.x -= 10;
+        if (direction === 'RIGHT') head.x += 10;
+
+        snake.unshift(head);
+        if (head.x === food.x && head.y === food.y) {
+          food.x = Math.floor(Math.random() * 30) * 10;
+          food.y = Math.floor(Math.random() * 30) * 10;
+        } else {
+          snake.pop();
+        }
+
+        if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+          gameOver = true;
+        }
+
+        for (let i = 1; i < snake.length; i++) {
+          if (head.x === snake[i].x && head.y === snake[i].y) {
+            gameOver = true;
+          }
+        }
+      }
+
+      function update() {
+        if (!gameOver) {
+          move();
+          draw();
+          setTimeout(update, 100);
+        } else {
+          alert('Game Over');
+        }
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp' && direction !== 'DOWN') direction = 'UP';
+        if (e.key === 'ArrowDown' && direction !== 'UP') direction = 'DOWN';
+        if (e.key === 'ArrowLeft' && direction !== 'RIGHT') direction = 'LEFT';
+        if (e.key === 'ArrowRight' && direction !== 'LEFT') direction = 'RIGHT';
+      });
+
+      update();
+    }
+
+    // Space Invaders (simplified version)
+    function initSpaceInvaders(canvas) {
+      const ctx = canvas.getContext('2d');
+      canvas.width = 300;
+      canvas.height = 300;
+
+      let shipX = canvas.width / 2 - 15;
+      let shipY = canvas.height - 30;
+      let bullets = [];
+      let enemies = [];
+
+      for (let i = 0; i < 5; i++) {
+        for (let j = 0; j < 5; j++) {
+          enemies.push({ x: j * 50 + 30, y: i * 40 + 30 });
+        }
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw ship
+        ctx.fillStyle = 'blue';
+        ctx.fillRect(shipX, shipY, 30, 10);
+
+        // Draw bullets
+        ctx.fillStyle = 'yellow';
+        for (const bullet of bullets) {
+          ctx.fillRect(bullet.x, bullet.y, 3, 10);
+        }
+
+        // Draw enemies
+        ctx.fillStyle = 'red';
+        for (const enemy of enemies) {
+          ctx.fillRect(enemy.x, enemy.y, 30, 30);
+        }
+      }
+
+      function update() {
+        for (let i = 0; i < bullets.length; i++) {
+          bullets[i].y -= 5;
+          if (bullets[i].y < 0) bullets.splice(i, 1);
+        }
+
+        // Check for collisions
+        for (let i = 0; i < bullets.length; i++) {
+          for (let j = 0; j < enemies.length; j++) {
+            if (
+              bullets[i].x < enemies[j].x + 30 &&
+              bullets[i].x + 3 > enemies[j].x &&
+              bullets[i].y < enemies[j].y + 30 &&
+              bullets[i].y + 10 > enemies[j].y
+            ) {
+              enemies.splice(j, 1);
+              bullets.splice(i, 1);
+              break;
+            }
+          }
+        }
+
+        draw();
+        requestAnimationFrame(update);
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' && shipX > 0) shipX -= 10;
+        if (e.key === 'ArrowRight' && shipX < canvas.width - 30) shipX += 10;
+        if (e.key === ' ') {
+          bullets.push({ x: shipX + 12, y: shipY });
+        }
+      });
+
+      update();
+    }
+
+    // Subway Surfers (Clone)
+    function initSubwaySurfers(canvas) {
+      const ctx = canvas.getContext('2d');
+      canvas.width = 300;
+      canvas.height = 300;
+
+      let player = { x: 50, y: canvas.height - 50, width: 30, height: 30 };
+      let obstacles = [];
+      let gameOver = false;
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'red';
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+
+        // Draw obstacles
+        ctx.fillStyle = 'green';
+        for (const obs of obstacles) {
+          ctx.fillRect(obs.x, obs.y, 30, 30);
+        }
+      }
+
+      function update() {
+        if (!gameOver) {
+          for (let obs of obstacles) {
+            obs.y += 5;
+            if (obs.y > canvas.height) {
+              obs.y = -30;
+              obs.x = Math.floor(Math.random() * canvas.width);
+            }
+
+            if (
+              player.x < obs.x + 30 &&
+              player.x + player.width > obs.x &&
+              player.y < obs.y + 30 &&
+              player.y + player.height > obs.y
+            ) {
+              gameOver = true;
+              alert('Game Over!');
+              return;
+            }
+          }
+          draw();
+          setTimeout(update, 100);
+        }
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' && player.x > 0) player.x -= 10;
+        if (e.key === 'ArrowRight' && player.x < canvas.width - player.width) player.x += 10;
+      });
+
+      obstacles.push({ x: 100, y: -30 });
+      obstacles.push({ x: 200, y: -60 });
+
+      update();
+    }
+  </script>
+
+</body>
+</html>
